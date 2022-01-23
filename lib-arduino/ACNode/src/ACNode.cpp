@@ -192,7 +192,7 @@ void ACNode::begin(eth_board_t board /* default is BOARD_AART */)
 
     _espClient = WiFiClient();
     _client = PubSubClient(_espClient);
-    
+
 #ifdef CONFIGAP
     configBegin();
 #endif
@@ -268,35 +268,36 @@ char * ACNode::cloak(char * tag) {
     return NULL;
 }
 
-void ACNode::request_approval(const char * tag, const char * operation, const char * target, bool useCacheOk) { 
+void ACNode::request_approval(const char * tag, const char * operation, const char * target, bool useCacheOk) {
+
 	if (tag == NULL) {
 		Log.println("invalid tag==NULL passed, approval request not sent");
 		return;
 	};
- 	if (operation == NULL) 
-		operation = "energize";
+ 	if (operation == NULL) operation = "energize";
+	if (target == NULL) target = machine;
 
-	if (target == NULL) 
-		target = machine;
+    Serial.printf("request_approval tag=%s, operation=%s, target=%s\n", tag, operation, target == NULL ? "<null>" : target);
 
-        strncpy(_lasttag, tag, sizeof(_lasttag));
-        // Shortcircuit if permitted. Otherwise do the real thing. Note that our cache is primitive
-        // just tags - not commands or node/devices.
+    strncpy(_lasttag, tag, sizeof(_lasttag));
+    // Shortcircuit if permitted. Otherwise do the real thing. Note that our cache is primitive
+    // just tags - not commands or node/devices.
 	if (_approved_callback && useCacheOk && checkCache(_lasttag)) {
-                _approved_callback(machine);
+        _approved_callback(machine);
 	};
-       
+
 	char * tmp = (char *)malloc(MAX_MSG);
-        char * buff = (char *)malloc(MAX_MSG);
+    char * buff = (char *)malloc(MAX_MSG);
+
 	if (!tmp || !buff) {
 		Log.println("Out of memory during cloacking");
 		goto _return_request_approval;
 		return;
 	};
 
-        // We need to copy this - as cloak will overwrite this in place.
-        // todo - redesing to be more embedded friendly.
-	strncpy(tmp, tag, sizeof(MAX_MSG));
+    // We need to copy this - as cloak will overwrite this in place.
+    // todo - redesing to be more embedded friendly.
+	strncpy(tmp, tag, MAX_MSG);
 	if (!(cloak(tmp))) {
 		Log.println("Coud not cloak the tag, approval request not sent");
 		goto _return_request_approval;
@@ -304,12 +305,14 @@ void ACNode::request_approval(const char * tag, const char * operation, const ch
 	};
 
 	Debug.printf("Requesting approval for %s at node %s on machine %s by tag %s\n", 
-		operation ? operation : "<null>", moi ? moi: "<null>", operation ? operation : "<null>", tag ? "*****" : "<null>");
+		operation ? operation : "<null>", moi ? moi: "<null>", target, tag ? "*****" : "<null>");
 
-	snprintf(buff,sizeof(MAX_MSG),"%s %s %s %s", operation, moi, target, tmp);
+	snprintf(buff, MAX_MSG, "%s %s %s %s", operation, moi, target, tmp);
 
-        _lastSwipe = beatCounter;
-        _reqs++;
+	Debug.printf("Request approval message payload: %s\n", buff);
+
+    _lastSwipe = beatCounter;
+    _reqs++;
 	send(NULL,buff);
 
 _return_request_approval:
@@ -492,7 +495,7 @@ ACBase::cmd_result_t ACNode::handle_cmd(ACRequest * req)
       if (app) {
          Log.printf("Received OK to power on %s\n", machine);
          if (_approved_callback) {
-		_approved_callback(machine);
+		    _approved_callback(machine);
         	return ACNode::CMD_CLAIMED;
          };
      } else {

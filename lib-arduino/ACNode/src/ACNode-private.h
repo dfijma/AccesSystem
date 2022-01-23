@@ -177,7 +177,9 @@ public:
 
     typedef std::function<void(const char *msg)> THandlerFunction_SimpleCallback;
     ACNode& onApproval(THandlerFunction_SimpleCallback fn)
-	    { _approved_callback = fn; return *this; };
+	    {
+	    _approved_callback = fn; return *this;
+	    };
     ACNode& onDenied(THandlerFunction_SimpleCallback fn)
 	    { _denied_callback = fn; return *this; };
     

@@ -1,6 +1,6 @@
 #include <ACNode-private.h>
 
-#if MQTT_MAX_PACKET_SIZE < 256
+#if MQTT_MAX_PACKET_SIZE < 1024
 #error "You will need to increase te MQTT_MAX_PACKET_SIZE size a bit in PubSubClient.h"
 #endif
 
@@ -26,8 +26,6 @@ void ACNode::send(const char * topic, const char * payload, bool _raw) {
         snprintf(_topic, sizeof(_topic), "%s/%s/%s", mqtt_topic_prefix, master, ACNode::moi);
         topic = _topic;
     };
-
-//    Serial.printf("send('%s','%s',%d)\n", topic ? topic : "<null>", payload ? payload : "<null>" , _raw);
 
     publish_rec_t * rec = (publish_rec_t *)malloc(sizeof(publish_rec_t));
     if (rec) {

@@ -1,7 +1,11 @@
 #include <ACNode-private.h>
 
 #ifdef ESP32
+
+#include <ETH.h>
+
 static bool _connected = false;
+
 
 bool eth_connected () {
 	return _connected;
