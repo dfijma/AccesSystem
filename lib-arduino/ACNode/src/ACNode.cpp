@@ -312,6 +312,7 @@ void ACNode::request_approval(const char * tag, const char * operation, const ch
 	Debug.printf("Request approval message payload: %s\n", buff);
 
     _lastSwipe = beatCounter;
+    Log.printf("setting lastSwipe %ld\n", _lastSwipe);
     _reqs++;
 	send(NULL,buff);
 
@@ -486,9 +487,10 @@ ACBase::cmd_result_t ACNode::handle_cmd(ACRequest * req)
       };
 
       if (bc != _lastSwipe) {
-          Log.printf("Out of order energize/denied command received - ignored.\n");
-          return ACNode::CMD_CLAIMED;
+           Log.printf("Out of order energize/denied command received - (but not ignored) %ld %ld.\n", bc, _lastSwipe);
+           // return ACNode::CMD_CLAIMED;
       };
+      Log.printf("_lastSwipe %ld.\n", _lastSwipe);
 
       setCache(_lasttag, app, (unsigned long) beatCounter);
 
